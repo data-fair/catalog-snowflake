@@ -1,0 +1,83 @@
+{
+  "$id": "https://github.com/data-fair/catalog-snowflake/catalog-config",
+  "x-exports": ["types", "validate", "schema"],
+  "title": "SnowflakeConfig",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["account", "user", "password", "warehouse"],
+  "properties": {
+    "account": {
+      "type": "string",
+      "title": "Account",
+      "x-i18n-title": {
+        "fr": "Compte"
+      },
+      "description": "The Snowflake account identifier (e.g. xy12345 or myorg-myaccount)",
+      "x-i18n-description": {
+        "fr": "L'identifiant de compte Snowflake (par exemple xy12345 ou monorg-moncompte)"
+      },
+      "examples": ["xy12345.eu-west-1"]
+    },
+    "user": {
+      "type": "string",
+      "title": "User",
+      "x-i18n-title": {
+        "fr": "Utilisateur"
+      },
+      "description": "The Snowflake user used to access the catalog",
+      "x-i18n-description": {
+        "fr": "L'utilisateur Snowflake utilisé pour accéder au catalogue"
+      }
+    },
+    "password": {
+      "type": "string",
+      "title": "Password",
+      "x-i18n-title": {
+        "fr": "Mot de passe"
+      },
+      "description": "The password associated with the Snowflake user",
+      "x-i18n-description": {
+        "fr": "Le mot de passe associé à l'utilisateur Snowflake"
+      },
+      "layout": {
+        "props": {
+          "type": "password",
+          "autocomplete": "suppress"
+        }
+      }
+    },
+    "warehouse": {
+      "type": "string",
+      "title": "Warehouse",
+      "x-i18n-title": {
+        "fr": "Entrepôt"
+      },
+      "description": "The Snowflake warehouse used to run the queries. It is resumed automatically if suspended",
+      "x-i18n-description": {
+        "fr": "L'entrepôt Snowflake utilisé pour exécuter les requêtes. Il est redémarré automatiquement s'il est suspendu"
+      }
+    },
+    "role": {
+      "type": "string",
+      "title": "Role",
+      "x-i18n-title": {
+        "fr": "Rôle"
+      },
+      "description": "The Snowflake role used to access databases, schemas and tables",
+      "x-i18n-description": {
+        "fr": "Le rôle Snowflake utilisé pour accéder aux bases, schémas et tables"
+      }
+    },
+    "database": {
+      "type": "string",
+      "title": "Database",
+      "x-i18n-title": {
+        "fr": "Base de données"
+      },
+      "description": "Optional. When set, the catalog browses the schemas of this database directly instead of listing all accessible databases",
+      "x-i18n-description": {
+        "fr": "Optionnel. Si renseigné, le catalogue parcourt directement les schémas de cette base au lieu de lister toutes les bases accessibles"
+      }
+    }
+  }
+}

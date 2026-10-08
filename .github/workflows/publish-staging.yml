@@ -1,0 +1,25 @@
+name: Publish main to Staging Registry
+on:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      # install deps (incl. devDeps) so the type builder is available when the
+      # publish action runs `npm pack` -> `prepack` -> build-types
+      - run: npm ci
+      - uses: data-fair/registry/.github/actions/publish-plugin@main
+        with:
+          registry-url: https://staging-koumoul.com/registry
+          category: catalog
+          api-key: ${{ secrets.REGISTRY_API_KEY }}

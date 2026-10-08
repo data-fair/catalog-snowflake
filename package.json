@@ -1,0 +1,52 @@
+{
+  "name": "@data-fair/catalog-snowflake",
+  "description": "Snowflake plugin for the Data Fair catalogs service.",
+  "version": "0.1.0",
+  "main": "index.ts",
+  "type": "module",
+  "scripts": {
+    "build-types": "df-build-types ./",
+    "check-types": "tsc",
+    "lint": "eslint .",
+    "prepare": "husky || true",
+    "test-base": "NODE_ENV=test EVENTS_LOG_LEVEL=alert node --experimental-test-module-mocks --disable-warning=ExperimentalWarning --test-force-exit --test-concurrency=1 --test",
+    "test-only": "npm run test-base -- --test-only test-it/*.ts",
+    "test": "npm run test-base test-it/*.ts",
+    "quality": "npm run lint && npm run build-types && npm run check-types && npm run test && npm audit --omit=dev --audit-level=critical",
+    "prepack": "npm run build-types"
+  },
+  "files": [
+    "./lib/**",
+    "./types/**",
+    "index.ts"
+  ],
+  "imports": {
+    "#types": "./types/index.ts",
+    "#type/*": "./types/*"
+  },
+  "keywords": [
+    "data-fair-catalogs-plugin"
+  ],
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "@data-fair/lib-validation": "^1.0.2",
+    "csv-stringify": "^6.5.2",
+    "snowflake-sdk": "^3.4.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
+    "@data-fair/lib-types-builder": "^1.8.0",
+    "@data-fair/types-catalogs": "^0.7.0",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^24.0.3",
+    "chalk": "^5.6.0",
+    "dayjs": "^1.11.0",
+    "draftlog": "^1.0.13",
+    "eslint": "^9.25.1",
+    "fs-extra": "^11.3.0",
+    "husky": "^9.1.7",
+    "neostandard": "^0.12.1",
+    "typescript": "^5.8.3"
+  }
+}
