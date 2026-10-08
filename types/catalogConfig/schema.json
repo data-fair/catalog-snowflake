@@ -4,7 +4,13 @@
   "title": "SnowflakeConfig",
   "type": "object",
   "additionalProperties": false,
-  "required": ["account", "user", "password", "warehouse"],
+  "required": ["account", "user", "warehouse"],
+  "if": {
+    "required": ["authMethod"],
+    "properties": { "authMethod": { "const": "keyPair" } }
+  },
+  "then": { "required": ["privateKey"] },
+  "else": { "required": ["password"] },
   "properties": {
     "account": {
       "type": "string",
@@ -12,11 +18,24 @@
       "x-i18n-title": {
         "fr": "Compte"
       },
-      "description": "The Snowflake account identifier (e.g. xy12345 or myorg-myaccount)",
+      "description": "The Snowflake account identifier, without the https:// prefix nor the .snowflakecomputing.com suffix (e.g. myorg-myaccount or xy12345.eu-west-1)",
       "x-i18n-description": {
-        "fr": "L'identifiant de compte Snowflake (par exemple xy12345 ou monorg-moncompte)"
+        "fr": "L'identifiant de compte Snowflake, sans le préfixe https:// ni le suffixe .snowflakecomputing.com (par exemple monorg-moncompte ou xy12345.eu-west-1)"
       },
-      "examples": ["xy12345.eu-west-1"]
+      "pattern": "^[^/:\\s]+$",
+      "errorMessage": {
+        "pattern": "Invalid account identifier: do not enter a URL (e.g. myorg-myaccount)."
+      },
+      "x-i18n-errorMessage": {
+        "fr": {
+          "pattern": "Identifiant de compte invalide : ne saisissez pas une URL (ex : monorg-moncompte)."
+        }
+      },
+      "layout": {
+        "props": {
+          "placeholder": "myorg-myaccount"
+        }
+      }
     },
     "user": {
       "type": "string",
@@ -27,7 +46,40 @@
       "description": "The Snowflake user used to access the catalog",
       "x-i18n-description": {
         "fr": "L'utilisateur Snowflake utilisé pour accéder au catalogue"
+      },
+      "layout": {
+        "props": {
+          "autocomplete": "suppress"
+        }
       }
+    },
+    "authMethod": {
+      "type": "string",
+      "title": "Authentication method",
+      "x-i18n-title": {
+        "fr": "Méthode d'authentification"
+      },
+      "description": "Snowflake blocks password sign-ins for service users: prefer a key pair, or a programmatic access token entered as the password",
+      "x-i18n-description": {
+        "fr": "Snowflake bloque la connexion par mot de passe des utilisateurs de service : privilégiez une paire de clés, ou un jeton d'accès programmatique saisi comme mot de passe"
+      },
+      "default": "password",
+      "oneOf": [
+        {
+          "const": "password",
+          "title": "Password or programmatic access token",
+          "x-i18n-title": {
+            "fr": "Mot de passe ou jeton d'accès programmatique"
+          }
+        },
+        {
+          "const": "keyPair",
+          "title": "Key pair",
+          "x-i18n-title": {
+            "fr": "Paire de clés"
+          }
+        }
+      ]
     },
     "password": {
       "type": "string",
@@ -35,11 +87,45 @@
       "x-i18n-title": {
         "fr": "Mot de passe"
       },
-      "description": "The password associated with the Snowflake user",
+      "description": "The password or the programmatic access token (PAT) of the Snowflake user",
       "x-i18n-description": {
-        "fr": "Le mot de passe associé à l'utilisateur Snowflake"
+        "fr": "Le mot de passe ou le jeton d'accès programmatique (PAT) de l'utilisateur Snowflake"
       },
       "layout": {
+        "if": "parent.data.authMethod !== 'keyPair'",
+        "props": {
+          "type": "password",
+          "autocomplete": "suppress"
+        }
+      }
+    },
+    "privateKey": {
+      "type": "string",
+      "title": "Private key",
+      "x-i18n-title": {
+        "fr": "Clé privée"
+      },
+      "description": "The PEM private key (PKCS#8) whose public key is registered on the Snowflake user",
+      "x-i18n-description": {
+        "fr": "La clé privée PEM (PKCS#8) dont la clé publique est enregistrée sur l'utilisateur Snowflake"
+      },
+      "layout": {
+        "comp": "textarea",
+        "if": "parent.data.authMethod === 'keyPair'"
+      }
+    },
+    "privateKeyPass": {
+      "type": "string",
+      "title": "Private key passphrase",
+      "x-i18n-title": {
+        "fr": "Phrase secrète de la clé privée"
+      },
+      "description": "Only if the private key is encrypted",
+      "x-i18n-description": {
+        "fr": "Uniquement si la clé privée est chiffrée"
+      },
+      "layout": {
+        "if": "parent.data.authMethod === 'keyPair'",
         "props": {
           "type": "password",
           "autocomplete": "suppress"
@@ -74,9 +160,9 @@
       "x-i18n-title": {
         "fr": "Base de données"
       },
-      "description": "Optional. When set, the catalog browses the schemas of this database directly instead of listing all accessible databases",
+      "description": "When set, the catalog browses the schemas of this database directly instead of listing all accessible databases",
       "x-i18n-description": {
-        "fr": "Optionnel. Si renseigné, le catalogue parcourt directement les schémas de cette base au lieu de lister toutes les bases accessibles"
+        "fr": "Si renseigné, le catalogue parcourt directement les schémas de cette base au lieu de lister toutes les bases accessibles"
       }
     }
   }

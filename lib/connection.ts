@@ -2,22 +2,47 @@ import snowflake from 'snowflake-sdk'
 import type { Connection, ConnectionOptions, RowStatement } from 'snowflake-sdk'
 import type { SnowflakeConfig } from '#types'
 
+// By default the driver logs at INFO level both to the console and to a "snowflake.log" file
+// in the working directory, and parses non strict JSON variants with `new Function()`.
+snowflake.configure({ logLevel: 'WARN', logFilePath: 'STDOUT', jsonColumnVariantParser: JSON.parse })
+
+/** The value displayed in the config in place of a secret stored in the catalog secrets. */
+export const MASKED_SECRET = '********'
+
+const secret = (value: string | undefined, stored: string | undefined) => value === MASKED_SECRET ? stored : value
+
+/** Timeouts (in seconds) of the metadata queries and of the table exports. */
+export const METADATA_STATEMENT_TIMEOUT = 120
+export const EXPORT_STATEMENT_TIMEOUT = 3600
+
 /**
  * Resolve the connection options for the Snowflake driver.
- * The masked password ("********") is replaced by the deciphered secret.
+ * The masked secrets ("********") are replaced by the deciphered ones.
+ * Configs created before `authMethod` existed use the password.
  */
 export const snowflakeConnectionOptions = (
   catalogConfig: SnowflakeConfig,
   secrets: Record<string, string>
 ): ConnectionOptions => {
-  const password = catalogConfig.password === '********' ? secrets.password : catalogConfig.password
+  const privateKeyPass = secret(catalogConfig.privateKeyPass, secrets.privateKeyPass)
+  const auth = catalogConfig.authMethod === 'keyPair'
+    ? {
+        authenticator: 'SNOWFLAKE_JWT',
+        privateKey: secret(catalogConfig.privateKey, secrets.privateKey),
+        ...(privateKeyPass ? { privateKeyPass } : {})
+      }
+    : { password: secret(catalogConfig.password, secrets.password) }
   return {
     account: catalogConfig.account,
     username: catalogConfig.user,
-    password,
+    ...auth,
     warehouse: catalogConfig.warehouse,
     ...(catalogConfig.role ? { role: catalogConfig.role } : {}),
-    ...(catalogConfig.database ? { database: catalogConfig.database } : {})
+    ...(catalogConfig.database ? { database: catalogConfig.database } : {}),
+    // INTEGER columns are returned as big integers instead of losing precision above 2^53
+    jsTreatIntegerAsBigInt: true,
+    // otherwise null TIME values are returned as the "NULL" string
+    representNullAsStringNull: false
   }
 }
 
@@ -68,6 +93,7 @@ export const executeQuery = (connection: Connection, sqlText: string): Promise<a
   new Promise((resolve, reject) => {
     connection.execute({
       sqlText,
+      parameters: { STATEMENT_TIMEOUT_IN_SECONDS: METADATA_STATEMENT_TIMEOUT },
       complete: (err, _stmt, rows) => err ? reject(err) : resolve(rows ?? [])
     })
   })
@@ -81,6 +107,7 @@ export const executeStreaming = (connection: Connection, sqlText: string): Promi
     connection.execute({
       sqlText,
       streamResult: true,
+      parameters: { STATEMENT_TIMEOUT_IN_SECONDS: EXPORT_STATEMENT_TIMEOUT },
       complete: (err, stmt) => err ? reject(err) : resolve(stmt as RowStatement)
     })
   })

@@ -5,9 +5,19 @@
  */
 export const quoteIdentifier = (name: string) => `"${name.replace(/"/g, '""')}"`
 
-/** Split a folder id (e.g. "DB/SCHEMA") into its non empty segments. */
+/**
+ * Ids join the identifiers with "/". Only "%" and "/" are escaped inside a segment,
+ * so the ids of identifiers without these characters stay unchanged.
+ */
+export const encodeSegment = (name: string) => name.replace(/[%/]/g, c => c === '%' ? '%25' : '%2F')
+const decodeSegment = (segment: string) => segment.replace(/%(25|2F)/gi, m => m === '%25' ? '%' : '/')
+
+/** Build a folder or resource id (e.g. "DB/SCHEMA/TABLE") from its identifiers. */
+export const buildId = (...names: string[]) => names.map(encodeSegment).join('/')
+
+/** Split a folder id (e.g. "DB/SCHEMA") into its non empty identifiers. */
 export const folderSegments = (currentFolderId?: string): string[] =>
-  (currentFolderId ?? '').replace(/^\.\//, '').split('/').filter(Boolean)
+  (currentFolderId ?? '').split('/').filter(Boolean).map(decodeSegment)
 
 /** Split a resource id (e.g. "DB/SCHEMA/TABLE") into its three identifiers. */
 export const resourceParts = (resourceId: string): [string, string, string] => {
