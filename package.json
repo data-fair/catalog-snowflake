@@ -1,7 +1,7 @@
 {
   "name": "@data-fair/catalog-snowflake",
   "description": "Snowflake plugin for the Data Fair catalogs service.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "main": "index.ts",
   "type": "module",
   "scripts": {
