@@ -145,6 +145,15 @@ describe('snowflake catalog', () => {
       assert.throws(() => plugin.assertConfigValid({ ...base, authMethod: 'keyPair', password: 'x' }))
       assert.doesNotThrow(() => plugin.assertConfigValid({ ...base, authMethod: 'keyPair', privateKey: 'PEM' }))
     })
+
+    it('should refuse an account that is not a Snowflake subdomain', async () => {
+      const plugin = await getPlugin()
+      const base = { user: 'u', password: 'x', warehouse: 'WH' }
+      assert.doesNotThrow(() => plugin.assertConfigValid({ ...base, account: 'myorg-my_account' }))
+      for (const account of ['evil.com#', '10.0.0.1@x', 'a?b', 'https://x', 'a..b']) {
+        assert.throws(() => plugin.assertConfigValid({ ...base, account }), account)
+      }
+    })
   })
 
   describe('prepare', () => {

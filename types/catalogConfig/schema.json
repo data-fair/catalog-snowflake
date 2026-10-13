@@ -22,7 +22,7 @@
       "x-i18n-description": {
         "fr": "L'identifiant de compte Snowflake, sans le préfixe https:// ni le suffixe .snowflakecomputing.com (par exemple monorg-moncompte ou xy12345.eu-west-1)"
       },
-      "pattern": "^[^/:\\s]+$",
+      "pattern": "^\\w+([.-]\\w+)*$",
       "errorMessage": {
         "pattern": "Invalid account identifier: do not enter a URL (e.g. myorg-myaccount)."
       },
